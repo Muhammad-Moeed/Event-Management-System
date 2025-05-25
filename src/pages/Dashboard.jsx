@@ -344,7 +344,7 @@ const Dashboard = () => {
           <Row gutter={[24, 24]}>
             <Col xs={24} sm={12} lg={6}>
               <Card 
-                title="Total Approved" 
+                title="Total Approved " 
                 extra={<MoneyCollectOutlined style={{ color: '#ffb300', fontSize: '24px' }} />}
                 className="custom-card approved-card"
               >
@@ -360,7 +360,7 @@ const Dashboard = () => {
 
             <Col xs={24} sm={12} lg={6}>
               <Card 
-                title="Active Loans" 
+                title="Active Events" 
                 extra={<SolutionOutlined style={{ color: '#ffb300', fontSize: '24px' }} />}
                  className="custom-card active-card"
               >
@@ -379,7 +379,7 @@ const Dashboard = () => {
 
             <Col xs={24} sm={12} lg={6}>
               <Card 
-                title="Approved Loans" 
+                title="Approved Events" 
                 extra={<CheckCircleOutlined style={{ color: '#ffb300', fontSize: '24px' }} />}
                  className="custom-card approved-loans-card"
               >
@@ -401,7 +401,7 @@ const Dashboard = () => {
 
             <Col xs={24} sm={12} lg={6}>
               <Card 
-                title="Pending Requests" 
+                title="Pending Event" 
                 extra={<HourglassOutlined style={{ color: '#ffb300', fontSize: '24px' }} />}
                  className="custom-card pending-requests-card"
               >
@@ -422,7 +422,7 @@ const Dashboard = () => {
                 title={
                   <Space>
                     <BarChartOutlined style={{ color: '#ffb300', fontSize : '24px' }} />
-                    <Text strong style={{color:'white'}}>Loan Activity</Text>
+                    <Text strong style={{color:'white'}}>Events Activity</Text>
                     
                   </Space>
                 }
