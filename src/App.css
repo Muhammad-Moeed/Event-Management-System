@@ -1,0 +1,22 @@
+.custom-card .ant-card-head-title {
+  color: white;
+}
+.approved-card .ant-card-body {
+  background-color: #e8f5e9; /* Light green background */
+  color: #2e7d32;            /* Dark green text */
+}
+
+.approved-card .ant-statistic-content {
+  color: #2e7d32;            /* Statistic text color */
+}
+.active-card .ant-card-body {
+  background-color: #e0f7fa; /* Soft active blue background */
+}
+.approved-loans-card .ant-card-body {
+  background-color: #e8f5e9; /* Light green background */
+  color: #2e7d32;               /* dark yellow/brown text for good contrast */
+}
+.pending-requests-card .ant-card-body {
+  background-color: #fff8e1;  /* Soft light yellow background */
+  color: #8a6d1b;             /* Dark mustard text */
+}
