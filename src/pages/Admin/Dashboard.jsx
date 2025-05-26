@@ -27,7 +27,16 @@ import {
   Alert,
   Grid,
   Card,
-  Avatar
+  Avatar,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  List,
+  ListItem,
+  ListItemText,
+  Divider,
+  Badge
 } from '@mui/material';
 import {
   CheckCircle,
@@ -36,10 +45,13 @@ import {
   Visibility,
   Refresh,
   Search,
-  AttachMoney,
+  Event,
   ThumbUp,
   ThumbDown,
-  ListAlt
+  Delete,
+  Edit,
+  People,
+  Person
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import dayjs from 'dayjs';
@@ -70,7 +82,7 @@ const statusConfig = {
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
-  const [requests, setRequests] = useState([]);
+  const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
@@ -82,33 +94,54 @@ export default function AdminDashboard() {
     message: '',
     severity: 'success'
   });
+  const [participantsDialog, setParticipantsDialog] = useState({
+    open: false,
+    eventId: null,
+    participants: []
+  });
+  const [deleteDialog, setDeleteDialog] = useState({
+    open: false,
+    eventId: null
+  });
+  const [users, setUsers] = useState({});
 
   const stats = {
-    total: requests.length,
-    approved: requests.filter(req => req.status === 'approved').length,
-    rejected: requests.filter(req => req.status === 'rejected').length,
-    pending: requests.filter(req => req.status === 'pending').length,
-    totalApprovedAmount: requests
-      .filter(req => req.status === 'approved')
-      .reduce((sum, req) => sum + (parseFloat(req.loan_amount) || 0), 0)
+    total: events.length,
+    approved: events.filter(event => event.status === 'approved').length,
+    rejected: events.filter(event => event.status === 'rejected').length,
+    pending: events.filter(event => event.status === 'pending').length
   };
 
-  const fetchLoanRequests = async () => {
+  const fetchEvents = async () => {
     setLoading(true);
     setError(null);
     try {
       let query = supabase
-        .from('loan-form-request')
-        .select('*')
+        .from('event-form-request')
+        .select('*, profiles(first_name,last_name, email, avatar_url)')
         .order('created_at', { ascending: false });
 
       if (statusFilter !== 'all') query = query.eq('status', statusFilter);
-      if (searchTerm) query = query.ilike('full_name', `%${searchTerm}%`);
+      if (searchTerm) {
+        query = query.or(
+          `title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,location.ilike.%${searchTerm}%`
+        );
+      }
 
       const { data, error } = await query;
 
       if (error) throw error;
-      setRequests(data || []);
+      
+      // Create users map from the joined data
+      const userMap = {};
+      data.forEach(event => {
+        if (event.profiles) {
+          userMap[event.user_id] = event.profiles;
+        }
+      });
+      
+      setUsers(userMap);
+      setEvents(data || []);
     } catch (err) {
       console.error('Error:', err.message);
       setError(err.message);
@@ -120,22 +153,82 @@ export default function AdminDashboard() {
 
   const updateStatus = async (id, newStatus) => {
     try {
+      setLoading(true);
       const { data, error } = await supabase
-        .from('loan-form-request')
-        .update({ status: newStatus })
+        .from('event-form-request')
+        .update({ 
+          status: newStatus, 
+          updated_at: new Date().toISOString() 
+        })
         .eq('id', id)
-        .select();
+        .select('*, profiles(first_name,last_name, email, avatar_url)');
 
       if (error) throw error;
 
-      setRequests(prev => prev.map(req =>
-        req.id === id ? { ...req, status: newStatus } : req
-      ));
-      showSnackbar(`Status updated to ${newStatus}`, 'success');
-      fetchLoanRequests();
+      if (data && data.length > 0) {
+        setEvents(prev => prev.map(event =>
+          event.id === id ? data[0] : event
+        ));
+        
+        // Update users map if needed
+        if (data[0].profiles) {
+          setUsers(prev => ({
+            ...prev,
+            [data[0].user_id]: data[0].profiles
+          }));
+        }
+        
+        showSnackbar(`Status updated to ${newStatus}`, 'success');
+      }
     } catch (err) {
       console.error('Error:', err.message);
       showSnackbar(`Update failed: ${err.message}`, 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteEvent = async () => {
+    try {
+      setLoading(true);
+      const { error } = await supabase
+        .from('event-form-request')
+        .delete()
+        .eq('id', deleteDialog.eventId);
+
+      if (error) throw error;
+
+      setEvents(prev => prev.filter(event => event.id !== deleteDialog.eventId));
+      showSnackbar('Event deleted successfully', 'success');
+    } catch (err) {
+      console.error('Error:', err.message);
+      showSnackbar(`Delete failed: ${err.message}`, 'error');
+    } finally {
+      setLoading(false);
+      setDeleteDialog({ open: false, eventId: null });
+    }
+  };
+
+  const fetchParticipants = async (eventId) => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('event_participants')
+        .select('*, profiles!inner(first_name,last_name, email, event_id)')
+        .eq('event_id', eventId);
+
+      if (error) throw error;
+
+      setParticipantsDialog({
+        open: true,
+        eventId,
+        participants: data || []
+      });
+    } catch (err) {
+      console.error('Error:', err.message);
+      showSnackbar(`Failed to fetch participants: ${err.message}`, 'error');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -149,23 +242,28 @@ export default function AdminDashboard() {
 
   const handleViewDetails = (id) => {
     if (!id) {
-      showSnackbar('Invalid loan ID', 'error');
+      showSnackbar('Invalid event ID', 'error');
       return;
     }
-    navigate(`/admin/loan-detail/${id}`);
+    navigate(`/admin/event-detail/${id}`);
+  };
+
+  const handleEditEvent = (id) => {
+    navigate(`/admin/edit-event/${id}`);
   };
 
   useEffect(() => {
-    fetchLoanRequests();
+    fetchEvents();
   }, [statusFilter, searchTerm]);
 
-  const filteredRequests = requests.filter(req =>
-    req.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    req.loan_amount?.toString().includes(searchTerm) ||
-    req.id?.toString().includes(searchTerm)
+  const filteredEvents = events.filter(event =>
+    event.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    event.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    event.location?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    event.id?.toString().includes(searchTerm)
   );
 
-  const paginatedRequests = filteredRequests.slice(
+  const paginatedEvents = filteredEvents.slice(
     (page - 1) * rowsPerPage,
     page * rowsPerPage
   );
@@ -187,7 +285,7 @@ export default function AdminDashboard() {
         padding: 0
       }}>
         <Typography variant="h4" fontWeight="bold" sx={{ color: 'white', backgroundColor: 'black', padding: 2, borderRadius: 2 }}>
-          <span style={{ color: themeColors.secondary }}>Admin</span> Management Dashboard
+          <span style={{ color: themeColors.secondary }}>Events</span> Management Dashboard
         </Typography>
         <Button
           variant="contained"
@@ -212,14 +310,13 @@ export default function AdminDashboard() {
           }}
           startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <Refresh />}
           disabled={loading}
-
-          onClick={fetchLoanRequests}
+          onClick={fetchEvents}
         >
           REFRESH
         </Button>
-
       </Box>
 
+      {/* Stats Cards */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
         <Grid item xs={12} sm={6} md={3}>
           <Card sx={{
@@ -234,7 +331,7 @@ export default function AdminDashboard() {
                 mr: 2,
                 color: themeColors.secondary
               }}>
-                <ListAlt />
+                <Event />
               </Avatar>
               <Box>
                 <Typography variant="body2" color="textSecondary">Total Events</Typography>
@@ -303,13 +400,11 @@ export default function AdminDashboard() {
                 mr: 2,
                 color: '#2196F3'
               }}>
-                <AttachMoney />
+                <Person />
               </Avatar>
               <Box>
-                <Typography variant="body2" color="textSecondary">Approved Amount</Typography>
-                <Typography variant="h5" fontWeight="bold">
-                  PKR {stats.totalApprovedAmount.toLocaleString('en-PK')}
-                </Typography>
+                <Typography variant="body2" color="textSecondary">Pending Review</Typography>
+                <Typography variant="h5" fontWeight="bold">{stats.pending}</Typography>
               </Box>
             </Box>
           </Card>
@@ -328,7 +423,7 @@ export default function AdminDashboard() {
       }}>
         <TextField
           variant="outlined"
-          placeholder="Search loans..."
+          placeholder="Search events..."
           size="small"
           InputProps={{
             startAdornment: (
@@ -372,7 +467,7 @@ export default function AdminDashboard() {
       </Paper>
 
       {/* Main Content */}
-      {loading && !requests.length ? (
+      {loading && !events.length ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
           <CircularProgress sx={{ color: themeColors.secondary }} />
         </Box>
@@ -389,7 +484,7 @@ export default function AdminDashboard() {
           <Typography sx={{ mb: 2 }}>{error}</Typography>
           <Button
             variant="outlined"
-            onClick={fetchLoanRequests}
+            onClick={fetchEvents}
             sx={{
               color: themeColors.secondary,
               borderColor: themeColors.secondary
@@ -398,7 +493,7 @@ export default function AdminDashboard() {
             Retry
           </Button>
         </Paper>
-      ) : requests.length === 0 ? (
+      ) : events.length === 0 ? (
         <Paper sx={{
           p: 3,
           textAlign: 'center',
@@ -406,12 +501,12 @@ export default function AdminDashboard() {
           boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
         }}>
           <Typography variant="h6">
-            No loan requests found
+            No events found
           </Typography>
           <Typography color="textSecondary">
             {statusFilter !== 'all'
-              ? `No ${statusFilter} requests available`
-              : 'No requests have been submitted yet'}
+              ? `No ${statusFilter} events available`
+              : 'No events have been submitted yet'}
           </Typography>
         </Paper>
       ) : (
@@ -428,71 +523,119 @@ export default function AdminDashboard() {
               <TableHead sx={{ bgcolor: themeColors.primary }}>
                 <TableRow>
                   <TableCell sx={{ color: themeColors.secondary }}>ID</TableCell>
-                  <TableCell sx={{ color: themeColors.secondary }}>Applicant</TableCell>
-                  <TableCell sx={{ color: themeColors.secondary }}>Amount (PKR)</TableCell>
+                  <TableCell sx={{ color: themeColors.secondary }}>Event Title</TableCell>
+                  <TableCell sx={{ color: themeColors.secondary }}>Organizer</TableCell>
+                  <TableCell sx={{ color: themeColors.secondary }}>Location</TableCell>
+                  <TableCell sx={{ color: themeColors.secondary }}>Category</TableCell>
                   <TableCell sx={{ color: themeColors.secondary }}>Status</TableCell>
                   <TableCell sx={{ color: themeColors.secondary }}>Date</TableCell>
                   <TableCell sx={{ color: themeColors.secondary }}>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {paginatedRequests.map((req) => (
-                  <StyledTableRow key={req.id}>
-                    <TableCell>#{req.id}</TableCell>
+                {paginatedEvents.map((event) => (
+                  <StyledTableRow key={event.id}>
+                    <TableCell>#{event.id}</TableCell>
                     <TableCell>
                       <Typography fontWeight="medium">
-                        {req.full_name}
+                        {event.title}
                       </Typography>
                       <Typography variant="body2" color="textSecondary">
-                        {req.email}
+                        {event.description?.substring(0, 50)}...
                       </Typography>
                     </TableCell>
                     <TableCell>
-                      PKR {parseFloat(req.loan_amount || 0).toLocaleString('en-PK')}
+                      {users[event.user_id] ? (
+                        <>
+                          <Typography fontWeight="medium">
+                            {users[event.user_id].full_name}
+                          </Typography>
+                          <Typography variant="body2" color="textSecondary">
+                            {users[event.user_id].email}
+                          </Typography>
+                        </>
+                      ) : (
+                        <Typography>Loading user...</Typography>
+                      )}
+                    </TableCell>
+                    <TableCell>{event.location}</TableCell>
+                    <TableCell>
+                      <Chip label={event.category} size="small" />
                     </TableCell>
                     <TableCell>
                       <Chip
-                        label={req.status}
-                        color={statusConfig[req.status]?.color || 'default'}
-                        icon={statusConfig[req.status]?.icon}
+                        label={event.status}
+                        color={statusConfig[event.status]?.color || 'default'}
+                        icon={statusConfig[event.status]?.icon}
                         size="small"
                       />
                     </TableCell>
                     <TableCell>
-                      {dayjs(req.created_at).format('DD MMM, YYYY')}
+                      {dayjs(event.created_at).format('DD MMM, YYYY')}
                     </TableCell>
                     <TableCell>
                       <Box sx={{ display: 'flex', gap: 1 }}>
                         <Tooltip title="View Details">
                           <IconButton
                             sx={{ color: themeColors.primary }}
-                            onClick={() => handleViewDetails(req.id)}
+                            onClick={() => handleViewDetails(event.id)}
                           >
                             <Visibility />
                           </IconButton>
                         </Tooltip>
 
-                        {req.status !== 'approved' && (
+                        <Tooltip title="Edit Event">
+                          <IconButton
+                            sx={{ color: '#1976D2' }}
+                            onClick={() => handleEditEvent(event.id)}
+                          >
+                            <Edit />
+                          </IconButton>
+                        </Tooltip>
+
+                        {event.status === 'approved' && (
+                          <Tooltip title="View Participants">
+                            <IconButton
+                              sx={{ color: '#9C27B0' }}
+                              onClick={() => fetchParticipants(event.id)}
+                            >
+                              <Badge badgeContent={event.participants_count || 0} color="secondary">
+                                <People />
+                              </Badge>
+                            </IconButton>
+                          </Tooltip>
+                        )}
+
+                        {event.status !== 'approved' && (
                           <Tooltip title="Approve">
                             <IconButton
                               sx={{ color: '#4CAF50' }}
-                              onClick={() => updateStatus(req.id, 'approved')}
+                              onClick={() => updateStatus(event.id, 'approved')}
                             >
                               <CheckCircle />
                             </IconButton>
                           </Tooltip>
                         )}
 
-                        {req.status !== 'rejected' && (
+                        {event.status !== 'rejected' && (
                           <Tooltip title="Reject">
                             <IconButton
                               sx={{ color: '#F44336' }}
-                              onClick={() => updateStatus(req.id, 'rejected')}
+                              onClick={() => updateStatus(event.id, 'rejected')}
                             >
                               <Cancel />
                             </IconButton>
                           </Tooltip>
                         )}
+
+                        <Tooltip title="Delete">
+                          <IconButton
+                            sx={{ color: '#F44336' }}
+                            onClick={() => setDeleteDialog({ open: true, eventId: event.id })}
+                          >
+                            <Delete />
+                          </IconButton>
+                        </Tooltip>
                       </Box>
                     </TableCell>
                   </StyledTableRow>
@@ -503,7 +646,7 @@ export default function AdminDashboard() {
 
           <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
             <Pagination
-              count={Math.ceil(filteredRequests.length / rowsPerPage)}
+              count={Math.ceil(filteredEvents.length / rowsPerPage)}
               page={page}
               onChange={(_, value) => setPage(value)}
               sx={{
@@ -519,6 +662,77 @@ export default function AdminDashboard() {
           </Box>
         </>
       )}
+
+      {/* Participants Dialog */}
+      <Dialog
+        open={participantsDialog.open}
+        onClose={() => setParticipantsDialog({ open: false, eventId: null, participants: [] })}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>
+          Participants for Event #{participantsDialog.eventId}
+          <Typography variant="subtitle2" color="textSecondary">
+            Total: {participantsDialog.participants.length}
+          </Typography>
+        </DialogTitle>
+        <DialogContent dividers>
+          <List>
+            {participantsDialog.participants.length > 0 ? (
+              participantsDialog.participants.map((participant, index) => (
+                <div key={participant.id}>
+                  <ListItem>
+                    <Avatar 
+                      src={participant.profiles?.avatar_url} 
+                      sx={{ mr: 2 }}
+                    />
+                    <ListItemText
+                      primary={participant.profiles?.first_name || 'Unknown User'}
+                      secondary={participant.profiles?.email}
+                    />
+                  </ListItem>
+                  {index < participantsDialog.participants.length - 1 && <Divider />}
+                </div>
+              ))
+            ) : (
+              <Typography variant="body2" color="textSecondary" sx={{ p: 2 }}>
+                No participants registered for this event yet.
+              </Typography>
+            )}
+          </List>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setParticipantsDialog({ open: false, eventId: null, participants: [] })}>
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteDialog.open}
+        onClose={() => setDeleteDialog({ open: false, eventId: null })}
+      >
+        <DialogTitle>Confirm Delete</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to delete this event? This action cannot be undone.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialog({ open: false, eventId: null })}>
+            Cancel
+          </Button>
+          <Button 
+            onClick={deleteEvent} 
+            color="error"
+            variant="contained"
+            disabled={loading}
+          >
+            {loading ? <CircularProgress size={24} /> : 'Delete'}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Snackbar
         open={snackbar.open}
