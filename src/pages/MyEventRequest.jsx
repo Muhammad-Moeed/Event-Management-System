@@ -448,7 +448,7 @@ const MyEventRequest = () => {
           )}
         </Card>
 
-        {/* Add User Modal */}
+        {/* User Modal */}
         <Modal
           title={`Add User to ${selectedEvent?.title}`}
           visible={isAddUserModalVisible}

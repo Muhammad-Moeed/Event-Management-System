@@ -3,7 +3,7 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 2,
+            "activePatchIndex": 3,
             "patches": [
                 {
                     "date": 1748255846193,
@@ -16,6 +16,10 @@
                 {
                     "date": 1748260070128,
                     "content": "Index: \n===================================================================\n--- \n+++ \n@@ -166,10 +166,9 @@\n \r\n   const handleAddUser = async () => {\r\n     try {\r\n       const values = await form.validateFields();\r\n-      \r\n-      // Add user\r\n+    \r\n       const { error } = await supabase\r\n         .from('event_participants')\r\n         .insert([{\r\n           event_id: selectedEvent.id,\r\n"
+                },
+                {
+                    "date": 1748296302833,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -447,9 +447,9 @@\n             />\r\n           )}\r\n         </Card>\r\n \r\n-        {/* Add User Modal */}\r\n+        {/* User Modal */}\r\n         <Modal\r\n           title={`Add User to ${selectedEvent?.title}`}\r\n           visible={isAddUserModalVisible}\r\n           onOk={handleAddUser}\r\n"
                 }
             ],
             "date": 1748255846193,

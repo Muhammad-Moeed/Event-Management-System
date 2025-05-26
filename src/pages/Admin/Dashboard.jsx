@@ -132,7 +132,6 @@ export default function AdminDashboard() {
 
       if (error) throw error;
       
-      // Create users map from the joined data
       const userMap = {};
       data.forEach(event => {
         if (event.profiles) {
@@ -170,7 +169,6 @@ export default function AdminDashboard() {
           event.id === id ? data[0] : event
         ));
         
-        // Update users map if needed
         if (data[0].profiles) {
           setUsers(prev => ({
             ...prev,
@@ -276,7 +274,6 @@ export default function AdminDashboard() {
       color: themeColors.text,
       margin: 0
     }}>
-      {/* Header Section */}
       <Box sx={{
         display: 'flex',
         justifyContent: 'space-between',
@@ -315,8 +312,6 @@ export default function AdminDashboard() {
           REFRESH
         </Button>
       </Box>
-
-      {/* Stats Cards */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
         <Grid item xs={12} sm={6} md={3}>
           <Card sx={{
@@ -411,7 +406,7 @@ export default function AdminDashboard() {
         </Grid>
       </Grid>
 
-      {/* Filter Controls */}
+      {/* Filteration */}
       <Paper sx={{
         p: 2,
         mb: 3,
@@ -663,7 +658,7 @@ export default function AdminDashboard() {
         </>
       )}
 
-      {/* Participants Dialog */}
+      {/* Participants */}
       <Dialog
         open={participantsDialog.open}
         onClose={() => setParticipantsDialog({ open: false, eventId: null, participants: [] })}
@@ -707,8 +702,7 @@ export default function AdminDashboard() {
           </Button>
         </DialogActions>
       </Dialog>
-
-      {/* Delete Confirmation Dialog */}
+      
       <Dialog
         open={deleteDialog.open}
         onClose={() => setDeleteDialog({ open: false, eventId: null })}
