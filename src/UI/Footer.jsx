@@ -12,7 +12,7 @@ export default function Footer() {
     }}>
       <img src={logo} alt="Logo" style={{ height: 40, marginRight: 15 }} />
       <p style={{ margin: 0, color: '#555', fontSize: 14 }}>
-        © 2025 Asan Qarza. All rights reserved.
+        © 2025 Event Managment. All rights reserved.
       </p>
     </footer>
   );

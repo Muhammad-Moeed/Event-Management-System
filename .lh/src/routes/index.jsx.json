@@ -1,0 +1,66 @@
+{
+    "sourceFile": "src/routes/index.jsx",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 12,
+            "patches": [
+                {
+                    "date": 1748255601735,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1748255646400,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,9 +1,9 @@\n import Signup from '../pages/SignUp.jsx';\r\n import Login from '../pages/LogIn.jsx';\r\n import Dashboard from '../pages/Dashboard.jsx';\r\n import MyLoanRequest from '../pages/MyLoanRequest.jsx';\r\n-import NewEvent from '../pages/NewLoan';\r\n+import NewEvent from '../pages/NewEvent';\r\n import Profile from '../pages/Profile';\r\n import ErrorPage from '../pages/ErrorPage';\r\n import LandingPage from '../pages/LandingPage.jsx';\r\n import PrivateRoute from '../components/PrivateRoute';\r\n"
+                },
+                {
+                    "date": 1748255658358,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,9 +1,9 @@\n import Signup from '../pages/SignUp.jsx';\r\n import Login from '../pages/LogIn.jsx';\r\n import Dashboard from '../pages/Dashboard.jsx';\r\n import MyLoanRequest from '../pages/MyLoanRequest.jsx';\r\n-import NewEvent from '../pages/NewEvent';\r\n+import NewEvent from '../pages/NewEvent.jsx';\r\n import Profile from '../pages/Profile';\r\n import ErrorPage from '../pages/ErrorPage';\r\n import LandingPage from '../pages/LandingPage.jsx';\r\n import PrivateRoute from '../components/PrivateRoute';\r\n"
+                },
+                {
+                    "date": 1748255678859,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -94,9 +94,9 @@\n     sidebarIcon: 'request',\r\n     layout: true,\r\n   },\r\n   {\r\n-    path: '/new-loan',\r\n+    path: '/new-',\r\n     element: (\r\n       <PrivateRoute  allowedRoles={['user']}>\r\n         <NewLoan />\r\n       </PrivateRoute>\r\n"
+                },
+                {
+                    "date": 1748255687731,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -94,12 +94,12 @@\n     sidebarIcon: 'request',\r\n     layout: true,\r\n   },\r\n   {\r\n-    path: '/new-',\r\n+    path: '/new-event',\r\n     element: (\r\n       <PrivateRoute  allowedRoles={['user']}>\r\n-        <NewLoan />\r\n+        <NewEvent />\r\n       </PrivateRoute>\r\n     ),\r\n     showInSidebar: true,\r\n     sidebarText: 'New Event',\r\n"
+                },
+                {
+                    "date": 1748255842512,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,8 +1,8 @@\n import Signup from '../pages/SignUp.jsx';\r\n import Login from '../pages/LogIn.jsx';\r\n import Dashboard from '../pages/Dashboard.jsx';\r\n-import MyLoanRequest from '../pages/MyLoanRequest.jsx';\r\n+import MyLoanRequest from '../pages/MyEventRequest.jsx';\r\n import NewEvent from '../pages/NewEvent.jsx';\r\n import Profile from '../pages/Profile';\r\n import ErrorPage from '../pages/ErrorPage';\r\n import LandingPage from '../pages/LandingPage.jsx';\r\n"
+                },
+                {
+                    "date": 1748255902236,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,8 +1,8 @@\n import Signup from '../pages/SignUp.jsx';\r\n import Login from '../pages/LogIn.jsx';\r\n import Dashboard from '../pages/Dashboard.jsx';\r\n-import MyLoanRequest from '../pages/MyEventRequest.jsx';\r\n+import MyEventRequest from '../pages/MyEventRequest.jsx';\r\n import NewEvent from '../pages/NewEvent.jsx';\r\n import Profile from '../pages/Profile';\r\n import ErrorPage from '../pages/ErrorPage';\r\n import LandingPage from '../pages/LandingPage.jsx';\r\n"
+                },
+                {
+                    "date": 1748255924788,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -82,9 +82,9 @@\n     sidebarIcon: 'dashboard',\r\n     layout: true,\r\n   },\r\n   {\r\n-    path: '/my-loan-request',\r\n+    path: '/my-event-request',\r\n     element: (\r\n       <PrivateRoute allowedRoles={['user']}>\r\n         <MyLoanRequest />\r\n       </PrivateRoute>\r\n"
+                },
+                {
+                    "date": 1748255930197,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -85,9 +85,9 @@\n   {\r\n     path: '/my-event-request',\r\n     element: (\r\n       <PrivateRoute allowedRoles={['user']}>\r\n-        <MyLoanRequest />\r\n+        <MyEventRequest />\r\n       </PrivateRoute>\r\n     ),\r\n     showInSidebar: true,\r\n     sidebarText: 'My Event Request',\r\n"
+                },
+                {
+                    "date": 1748256044363,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -6,9 +6,9 @@\n import Profile from '../pages/Profile';\r\n import ErrorPage from '../pages/ErrorPage';\r\n import LandingPage from '../pages/LandingPage.jsx';\r\n import PrivateRoute from '../components/PrivateRoute';\r\n-import LoanDetail from '../pages/LoanDetail.jsx';\r\n+import LoanDetail from '../pages/EventDetail.jsx';\r\n import CompleteProfile from '../pages/CompleteProfile.jsx';\r\n import VerifyEmail from '../pages/VerifyEmail.jsx';\r\n import AdminDashboard from '../pages/Admin/Dashboard.jsx';\r\n import UserManagement from '../pages/Admin/UserManagement.jsx';\r\n"
+                },
+                {
+                    "date": 1748256061866,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -128,9 +128,9 @@\n     showInSidebar: false,\r\n     layout: true,\r\n   },\r\n   {\r\n-    path : '/admin/loan-detail/:id',\r\n+    path : '/admin/event-detail/:id',\r\n     element: (\r\n       <PrivateRoute allowedRoles={['admin']}>\r\n         <LoanDetail />\r\n       </PrivateRoute>\r\n"
+                },
+                {
+                    "date": 1748256075502,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -6,9 +6,9 @@\n import Profile from '../pages/Profile';\r\n import ErrorPage from '../pages/ErrorPage';\r\n import LandingPage from '../pages/LandingPage.jsx';\r\n import PrivateRoute from '../components/PrivateRoute';\r\n-import LoanDetail from '../pages/EventDetail.jsx';\r\n+import EventDetail from '../pages/EventDetail.jsx';\r\n import CompleteProfile from '../pages/CompleteProfile.jsx';\r\n import VerifyEmail from '../pages/VerifyEmail.jsx';\r\n import AdminDashboard from '../pages/Admin/Dashboard.jsx';\r\n import UserManagement from '../pages/Admin/UserManagement.jsx';\r\n@@ -131,9 +131,9 @@\n   {\r\n     path : '/admin/event-detail/:id',\r\n     element: (\r\n       <PrivateRoute allowedRoles={['admin']}>\r\n-        <LoanDetail />\r\n+        <EventDetail />\r\n       </PrivateRoute>\r\n     ),\r\n     showInSidebar: false,\r\n     layout: true,\r\n"
+                },
+                {
+                    "date": 1748256085217,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -121,9 +121,9 @@\n   {\r\n     path: '/loan-detail/:id',\r\n     element: (\r\n       <PrivateRoute allowedRoles={['user']}>\r\n-        <LoanDetail />\r\n+        <EventDetail />\r\n       </PrivateRoute>\r\n     ),\r\n     showInSidebar: false,\r\n     layout: true,\r\n"
+                }
+            ],
+            "date": 1748255601735,
+            "name": "Commit-0",
+            "content": "import Signup from '../pages/SignUp.jsx';\r\nimport Login from '../pages/LogIn.jsx';\r\nimport Dashboard from '../pages/Dashboard.jsx';\r\nimport MyLoanRequest from '../pages/MyLoanRequest.jsx';\r\nimport NewEvent from '../pages/NewLoan';\r\nimport Profile from '../pages/Profile';\r\nimport ErrorPage from '../pages/ErrorPage';\r\nimport LandingPage from '../pages/LandingPage.jsx';\r\nimport PrivateRoute from '../components/PrivateRoute';\r\nimport LoanDetail from '../pages/LoanDetail.jsx';\r\nimport CompleteProfile from '../pages/CompleteProfile.jsx';\r\nimport VerifyEmail from '../pages/VerifyEmail.jsx';\r\nimport AdminDashboard from '../pages/Admin/Dashboard.jsx';\r\nimport UserManagement from '../pages/Admin/UserManagement.jsx';\r\n\r\n\r\n\r\nconst routes = [\r\n  {\r\n    path: '/',\r\n    element: <LandingPage />,\r\n    showInSidebar: false,\r\n    layout: false,\r\n  },\r\n  {\r\n    path: '/signup',\r\n    element: <Signup />,\r\n    showInSidebar: false,\r\n    layout: false,\r\n  },\r\n  {\r\n    path: '/verify-email',\r\n    element: <VerifyEmail />,\r\n    showInSidebar: false,\r\n    layout: false,\r\n  },\r\n  {\r\n    path: '/complete-profile',\r\n    element: <CompleteProfile />,\r\n    showInSidebar: false,\r\n    layout: false\r\n  },\r\n  {\r\n    path: '/login',\r\n    element: <Login />,\r\n    showInSidebar: false,\r\n    layout: false,\r\n  },\r\n\r\n  {\r\n    path: '/admin',\r\n    element: (\r\n      <PrivateRoute allowedRoles={['admin']}>\r\n        <AdminDashboard />\r\n      </PrivateRoute>\r\n    ),\r\n    showInSidebar: true,\r\n    sidebarIcon: 'dashboard',\r\n    sidebarText: 'Admin Dashboard',\r\n    adminOnly: true\r\n  },\r\n   {\r\n    path: '/admin/users',\r\n    element:(\r\n      <PrivateRoute allowedRoles={['admin']}>\r\n      <UserManagement />\r\n      </PrivateRoute>),\r\n    showInSidebar: true,\r\n    sidebarText: 'Manage Users',\r\n    sidebarIcon: 'users', \r\n    adminOnly: true\r\n  },\r\n  {\r\n    path: '/dashboard',\r\n    element: (\r\n      <PrivateRoute allowedRoles={['user']}>\r\n        <Dashboard />\r\n      </PrivateRoute>\r\n    ),\r\n    showInSidebar: true,\r\n    sidebarText: 'Dashboard',\r\n    sidebarIcon: 'dashboard',\r\n    layout: true,\r\n  },\r\n  {\r\n    path: '/my-loan-request',\r\n    element: (\r\n      <PrivateRoute allowedRoles={['user']}>\r\n        <MyLoanRequest />\r\n      </PrivateRoute>\r\n    ),\r\n    showInSidebar: true,\r\n    sidebarText: 'My Event Request',\r\n    sidebarIcon: 'request',\r\n    layout: true,\r\n  },\r\n  {\r\n    path: '/new-loan',\r\n    element: (\r\n      <PrivateRoute  allowedRoles={['user']}>\r\n        <NewLoan />\r\n      </PrivateRoute>\r\n    ),\r\n    showInSidebar: true,\r\n    sidebarText: 'New Event',\r\n    sidebarIcon: 'loan',\r\n    layout: true,\r\n  },\r\n  {\r\n    path: '/profile',\r\n    element: (\r\n      <PrivateRoute >\r\n        <Profile />\r\n      </PrivateRoute>\r\n    ),\r\n    showInSidebar: true,\r\n    sidebarText: 'My Profile',\r\n    sidebarIcon: 'profile',\r\n    layout: true,\r\n  },\r\n  {\r\n    path: '/loan-detail/:id',\r\n    element: (\r\n      <PrivateRoute allowedRoles={['user']}>\r\n        <LoanDetail />\r\n      </PrivateRoute>\r\n    ),\r\n    showInSidebar: false,\r\n    layout: true,\r\n  },\r\n  {\r\n    path : '/admin/loan-detail/:id',\r\n    element: (\r\n      <PrivateRoute allowedRoles={['admin']}>\r\n        <LoanDetail />\r\n      </PrivateRoute>\r\n    ),\r\n    showInSidebar: false,\r\n    layout: true,\r\n  },\r\n  {\r\n    path: '*',\r\n    element: <ErrorPage />,\r\n    showInSidebar: false,\r\n    layout: false\r\n  }\r\n];\r\n\r\nexport default routes;\r\n"
+        }
+    ]
+}

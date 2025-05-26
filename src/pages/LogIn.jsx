@@ -18,7 +18,7 @@ const useAuth = () => {
 
 const LogIn = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [formData, setFormData] = useState({ email: 'moeed@mailinator.com', password: '123456' });
   const [error, setError] = useState(null);
   const { user, logout } = useAuth();
   const navigate = useNavigate();

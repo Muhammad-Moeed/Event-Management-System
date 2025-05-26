@@ -1,13 +1,13 @@
 import Signup from '../pages/SignUp.jsx';
 import Login from '../pages/LogIn.jsx';
 import Dashboard from '../pages/Dashboard.jsx';
-import MyLoanRequest from '../pages/MyLoanRequest.jsx';
-import NewLoan from '../pages/NewLoan';
+import MyEventRequest from '../pages/MyEventRequest.jsx';
+import NewEvent from '../pages/NewEvent.jsx';
 import Profile from '../pages/Profile';
 import ErrorPage from '../pages/ErrorPage';
 import LandingPage from '../pages/LandingPage.jsx';
 import PrivateRoute from '../components/PrivateRoute';
-import LoanDetail from '../pages/LoanDetail.jsx';
+import EventDetail from '../pages/EventDetail.jsx';
 import CompleteProfile from '../pages/CompleteProfile.jsx';
 import VerifyEmail from '../pages/VerifyEmail.jsx';
 import AdminDashboard from '../pages/Admin/Dashboard.jsx';
@@ -83,10 +83,10 @@ const routes = [
     layout: true,
   },
   {
-    path: '/my-loan-request',
+    path: '/my-event-request',
     element: (
       <PrivateRoute allowedRoles={['user']}>
-        <MyLoanRequest />
+        <MyEventRequest />
       </PrivateRoute>
     ),
     showInSidebar: true,
@@ -95,10 +95,10 @@ const routes = [
     layout: true,
   },
   {
-    path: '/new-loan',
+    path: '/new-event',
     element: (
       <PrivateRoute  allowedRoles={['user']}>
-        <NewLoan />
+        <NewEvent />
       </PrivateRoute>
     ),
     showInSidebar: true,
@@ -119,20 +119,20 @@ const routes = [
     layout: true,
   },
   {
-    path: '/loan-detail/:id',
+    path: '/event-detail/:id',
     element: (
       <PrivateRoute allowedRoles={['user']}>
-        <LoanDetail />
+        <EventDetail />
       </PrivateRoute>
     ),
     showInSidebar: false,
     layout: true,
   },
   {
-    path : '/admin/loan-detail/:id',
+    path : '/admin/event-detail/:id',
     element: (
       <PrivateRoute allowedRoles={['admin']}>
-        <LoanDetail />
+        <EventDetail />
       </PrivateRoute>
     ),
     showInSidebar: false,

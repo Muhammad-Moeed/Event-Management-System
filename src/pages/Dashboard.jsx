@@ -26,15 +26,14 @@ import {
   PlusCircleOutlined,
   ArrowUpOutlined,
   FileTextOutlined,
-  MoneyCollectOutlined,
   CalendarOutlined,
   BarChartOutlined,
   SyncOutlined,
-  InfoCircleOutlined,
   UserOutlined,
   ClockCircleOutlined,
   PercentageOutlined,
-  SmileOutlined
+  SmileOutlined,
+  EnvironmentOutlined
 } from '@ant-design/icons';
 import { AuthContext } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
@@ -42,7 +41,8 @@ import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import supabase from '../services/supabaseClient';
 import Chart from 'react-apexcharts';
-import '../App.css'
+import '../App.css';
+
 dayjs.extend(relativeTime);
 
 const { Title, Text } = Typography;
@@ -80,7 +80,6 @@ const professionalTheme = {
 };
 
 const Dashboard = () => {
-  // User Data
   const { user } = useContext(AuthContext);
   const [userName, setUserName] = useState('');
   const [userAvatar, setUserAvatar] = useState('');
@@ -91,35 +90,23 @@ const Dashboard = () => {
     approved: 0,
     pending: 0,
     rejected: 0,
-    totalAmount: 0,
-    processingTime: 0,
-    satisfactionRate: 0,
-    rejectionRate: 0,
-    defaultRate: 0
+    totalEvents: 0,
+    upcomingEvents: 0
   });
 
   const [recentActivities, setRecentActivities] = useState([]);
   const [chartData, setChartData] = useState(null);
   const [performanceMetrics, setPerformanceMetrics] = useState([]);
 
-  // Helper Functions
   const getStatusColor = (status) => {
     switch (status) {
       case 'approved': return '#52c41a';
       case 'pending': return '#faad14';
       case 'rejected': return '#f5222d';
-      case 'defaulted': return '#fa8c16';
       default: return '#d9d9d9';
     }
   };
 
-  const getProcessingTimeColor = (days) => {
-    if (days < 1) return '#52c41a';
-    if (days < 3) return '#1890ff';
-    return '#faad14';
-  };
-
-  // Data Fetching
   useEffect(() => {
     const fetchUserProfile = async () => {
       if (!user?.id) return;
@@ -146,128 +133,113 @@ const Dashboard = () => {
       try {
         if (!user?.id) return;
 
-        // Fetch loan data
-        const { data: userLoans, error: loansError } = await supabase
-          .from('loan-form-request')
+        // Fetch events data
+        const { data: userEvents, error: eventsError } = await supabase
+          .from('event-form-request')
           .select('*')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false });
 
-        if (loansError) throw loansError;
+        if (eventsError) throw eventsError;
 
         // Calculate basic stats
-        const approvedLoans = userLoans.filter(loan => loan.status === 'approved');
-        const pendingLoans = userLoans.filter(loan => loan.status === 'pending');
-        const rejectedLoans = userLoans.filter(loan => loan.status === 'rejected');
-        const defaultedLoans = userLoans.filter(loan => loan.status === 'defaulted');
+        const approvedEvents = userEvents.filter(event => event.status === 'approved');
+        const pendingEvents = userEvents.filter(event => event.status === 'pending');
+        const rejectedEvents = userEvents.filter(event => event.status === 'rejected');
 
-        // Calculate active loans
+        // Calculate upcoming events
         const today = new Date();
-        const activeLoans = approvedLoans.filter((loan) => {
-          const approvedAt = loan.approved_at ? new Date(loan.approved_at) : null;
-          const repaymentMonths = parseInt(loan.repayment_period, 10) || 0;
-          if (!approvedAt) return false;
-
-          const endDate = new Date(approvedAt);
-          endDate.setMonth(endDate.getMonth() + repaymentMonths);
-          return endDate > today;
+        const upcomingEvents = approvedEvents.filter((event) => {
+          const eventDate = event.date_time ? new Date(event.date_time) : null;
+          return eventDate && eventDate > today;
         });
-
-        // Calculate total approved amount
-        const totalApprovedAmount = approvedLoans.reduce((sum, loan) => {
-          return sum + (parseFloat(loan.loan_amount) || 0);
-        }, 0);
-
-        // Calculate average processing time
-        let totalProcessingTime = 0;
-        let count = 0;
-
-        approvedLoans.forEach(loan => {
-          if (loan.created_at && loan.approved_at) {
-            const created = new Date(loan.created_at);
-            const approved = new Date(loan.approved_at);
-            totalProcessingTime += (approved - created) / (1000 * 60 * 60 * 24);
-            count++;
-          }
-        });
-
-        const avgProcessingTime = count > 0 ? (totalProcessingTime / count) : 0;
 
         // Set stats
         setStats({
-          active: activeLoans.length,
-          approved: approvedLoans.length,
-          pending: pendingLoans.length,
-          rejected: rejectedLoans.length,
-          totalAmount: totalApprovedAmount,
-          processingTime: avgProcessingTime,
-          satisfactionRate: 0, // You can add feedback logic here
-          rejectionRate: rejectedLoans.length > 0 ? 
-            Math.round((rejectedLoans.length / (approvedLoans.length + pendingLoans.length + rejectedLoans.length)) * 100) : 0,
-          defaultRate: defaultedLoans.length > 0 ? 
-            Math.round((defaultedLoans.length / approvedLoans.length) * 100) : 0
+          active: upcomingEvents.length,
+          approved: approvedEvents.length,
+          pending: pendingEvents.length,
+          rejected: rejectedEvents.length,
+          totalEvents: userEvents.length,
+          upcomingEvents: upcomingEvents.length
         });
 
+        // recent activities
         setRecentActivities(
-          userLoans.slice(0, 5).map((loan) => ({
-            id: loan.id,
-            action: `Loan ${loan.status}`,
-            time: dayjs(loan.created_at).fromNow(),
-            amount: loan.loan_amount,
-            status: loan.status,
-            approvedAt: loan.approved_at
+          userEvents.slice(0, 5).map((event) => ({
+            id: event.id,
+            title: event.title,
+            action: `Event ${event.status}`,
+            time: dayjs(event.created_at).fromNow(),
+            status: event.status,
+            date: event.date_time,
+            location: event.location
           }))
         );
 
+        // performance metrics
         setPerformanceMetrics([
           {
             key: 'approvalRate',
             title: 'Approval Rate',
-            value: approvedLoans.length > 0 ? 
-              Math.round((approvedLoans.length / (approvedLoans.length + pendingLoans.length + rejectedLoans.length)) * 100) : 0,
+            value: approvedEvents.length > 0 ? 
+              Math.round((approvedEvents.length / (approvedEvents.length + pendingEvents.length + rejectedEvents.length)) * 100) : 0,
             icon: <CheckCircleOutlined />,
             color: '#52c41a',
-            description: 'Percentage of approved applications'
+            description: 'Percentage of approved events'
           },
           {
-            key: 'processingTime',
-            title: 'Processing Time',
-            value: avgProcessingTime.toFixed(1),
-            unit: 'days',
-            icon: <ClockCircleOutlined />,
-            color: getProcessingTimeColor(avgProcessingTime),
-            description: 'Average approval time'
+            key: 'upcomingEvents',
+            title: 'Upcoming Events',
+            value: upcomingEvents.length,
+            icon: <CalendarOutlined />,
+            color: '#1890ff',
+            description: 'Events happening soon'
           },
           {
             key: 'rejectionRate',
             title: 'Rejection Rate',
-            value: rejectedLoans.length > 0 ? 
-              Math.round((rejectedLoans.length / (approvedLoans.length + pendingLoans.length + rejectedLoans.length)) * 100) : 0,
+            value: rejectedEvents.length > 0 ? 
+              Math.round((rejectedEvents.length / (approvedEvents.length + pendingEvents.length + rejectedEvents.length)) * 100) : 0,
             icon: <PercentageOutlined />,
             color: '#f5222d',
-            description: 'Percentage of rejected applications'
+            description: 'Percentage of rejected events'
           }
         ]);
+
+        // chart data (group by month)
+        const monthlyData = userEvents.reduce((acc, event) => {
+          const month = dayjs(event.created_at).format('MMM');
+          if (!acc[month]) {
+            acc[month] = { approved: 0, pending: 0, rejected: 0 };
+          }
+          acc[month][event.status]++;
+          return acc;
+        }, {});
+
+        const months = Object.keys(monthlyData);
+        const approvedData = months.map(month => monthlyData[month].approved);
+        const pendingData = months.map(month => monthlyData[month].pending);
 
         setChartData({
           options: {
             chart: {
-              type: 'area',
+              type: 'bar',
               toolbar: { show: false }
             },
             colors: ['#52c41a', '#ffb300'],
             xaxis: {
-              categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']
+              categories: months
             }
           },
           series: [
             {
               name: 'Approved',
-              data: [30, 40, 45, 50, 49, 60]
+              data: approvedData
             },
             {
               name: 'Pending',
-              data: [20, 30, 25, 35, 30, 40]
+              data: pendingData
             }
           ]
         });
@@ -324,7 +296,7 @@ const Dashboard = () => {
                   <Option value="month">This Month</Option>
                   <Option value="year">This Year</Option>
                 </Select>
-                <Link to="/new-loan">
+                <Link to="/new-event">
                   <Button 
                     type="primary" 
                     icon={<PlusCircleOutlined />}
@@ -333,7 +305,7 @@ const Dashboard = () => {
                       color: '#ffb300'
                     }}
                   >
-                    New Loan
+                    New Event
                   </Button>
                 </Link>
               </Space>
@@ -344,33 +316,32 @@ const Dashboard = () => {
           <Row gutter={[24, 24]}>
             <Col xs={24} sm={12} lg={6}>
               <Card 
-                title="Total Approved " 
-                extra={<MoneyCollectOutlined style={{ color: '#ffb300', fontSize: '24px' }} />}
-                className="custom-card approved-card"
+                title="Total Events" 
+                extra={<CalendarOutlined style={{ color: '#ffb300', fontSize: '24px' }} />}
+                className="custom-card"
               >
                 <Statistic
-                  value={stats.totalAmount.toLocaleString()}
-                  suffix="PKR"
-                  valueStyle={{ fontSize: '28px', fontWeight: 600,}}
+                  value={stats.totalEvents}
+                  valueStyle={{ fontSize: '28px', fontWeight: 600 }}
                 />
                 <Divider style={{ margin: '12px 0' }} />
-                <Text type="secondary">Updated {dayjs().format('h:mm A')}</Text>
+                <Text type="secondary">All your events</Text>
               </Card>
             </Col>
 
             <Col xs={24} sm={12} lg={6}>
               <Card 
-                title="Active Events" 
+                title="Upcoming Events" 
                 extra={<SolutionOutlined style={{ color: '#ffb300', fontSize: '24px' }} />}
-                 className="custom-card active-card"
+                className="custom-card"
               >
                 <Statistic
-                  value={stats.active}
+                  value={stats.upcomingEvents}
                   valueStyle={{ fontSize: '28px', fontWeight: 600, color: '#1890ff' }}
                 />
                 <Divider style={{ margin: '12px 0' }} />
                 <Progress
-                  percent={stats.approved > 0 ? Math.round((stats.active / stats.approved) * 100) : 0}
+                  percent={stats.totalEvents > 0 ? Math.round((stats.upcomingEvents / stats.totalEvents) * 100) : 0}
                   showInfo={false}
                   strokeColor="#1890ff"
                 />
@@ -381,7 +352,7 @@ const Dashboard = () => {
               <Card 
                 title="Approved Events" 
                 extra={<CheckCircleOutlined style={{ color: '#ffb300', fontSize: '24px' }} />}
-                 className="custom-card approved-loans-card"
+                className="custom-card"
               >
                 <Statistic
                   value={stats.approved}
@@ -391,9 +362,9 @@ const Dashboard = () => {
                 <Space>
                   <ArrowUpOutlined style={{ color: '#52c41a' }} />
                   <Text>
-                    {stats.approved > 0 
-                    ? Math.round((stats.approved / (stats.approved + stats.pending + stats.rejected)) * 100) 
-                    : 0}%
+                    {stats.totalEvents > 0 
+                      ? Math.round((stats.approved / stats.totalEvents) * 100) 
+                      : 0}%
                   </Text>
                 </Space>
               </Card>
@@ -401,9 +372,9 @@ const Dashboard = () => {
 
             <Col xs={24} sm={12} lg={6}>
               <Card 
-                title="Pending Event" 
+                title="Pending Events" 
                 extra={<HourglassOutlined style={{ color: '#ffb300', fontSize: '24px' }} />}
-                 className="custom-card pending-requests-card"
+                className="custom-card"
               >
                 <Statistic
                   value={stats.pending}
@@ -421,9 +392,8 @@ const Dashboard = () => {
               <Card
                 title={
                   <Space>
-                    <BarChartOutlined style={{ color: '#ffb300', fontSize : '24px' }} />
-                    <Text strong style={{color:'white'}}>Events Activity</Text>
-                    
+                    <BarChartOutlined style={{ color: '#ffb300', fontSize: '24px' }} />
+                    <Text strong style={{color: 'white'}}>Events Activity</Text>
                   </Space>
                 }
                 loading={loading}
@@ -432,7 +402,7 @@ const Dashboard = () => {
                   <Chart
                     options={chartData.options}
                     series={chartData.series}
-                    type="area"
+                    type="bar"
                     height={300}
                   />
                 )}
@@ -443,8 +413,8 @@ const Dashboard = () => {
               <Card
                 title={
                   <Space>
-                    <CheckCircleOutlined style={{ color: '#ffb300',fontSize : '24px' }} />
-                    <Text strong style={{color : 'white'}}>Performance Metrics</Text>
+                    <CheckCircleOutlined style={{ color: '#ffb300', fontSize: '24px' }} />
+                    <Text strong style={{color: 'white'}}>Event Metrics</Text>
                   </Space>
                 }
               >
@@ -460,10 +430,15 @@ const Dashboard = () => {
                         </Text>
                       </div>
                       <Progress
-                        percent={metric.value}
+                        percent={metric.key === 'upcomingEvents' ? 
+                          (stats.totalEvents > 0 ? Math.round((metric.value / stats.totalEvents) * 100) : 0) : 
+                          metric.value}
                         showInfo={false}
                         strokeColor={metric.color}
                       />
+                      <Text type="secondary" style={{ fontSize: 12 }}>
+                        {metric.description}
+                      </Text>
                     </div>
                   ))}
                 </Space>
@@ -475,8 +450,8 @@ const Dashboard = () => {
           <Card
             title={
               <Space>
-                <FileTextOutlined style={{ color: '#ffb300', fontSize:'24px' }} />
-                <Text strong style={{color: 'white'}}>Recent Activity</Text>
+                <FileTextOutlined style={{ color: '#ffb300', fontSize: '24px' }} />
+                <Text strong style={{color: 'white'}}>Recent Events</Text>
               </Space>
             }
           >
@@ -490,7 +465,7 @@ const Dashboard = () => {
                     avatar={<Avatar src={userAvatar} icon={<UserOutlined />} />}
                     title={
                       <Space>
-                        <Text strong>You</Text>
+                        <Text strong>{item.title}</Text>
                         <Badge
                           color={getStatusColor(item.status)}
                           text={item.status}
@@ -501,8 +476,13 @@ const Dashboard = () => {
                       <Space direction="vertical" size={0}>
                         <Text>{item.action}</Text>
                         <Text type="secondary" style={{ fontSize: 12 }}>
-                          {item.time} • {item.amount ? `${item.amount.toLocaleString()} PKR` : ''}
+                          {item.time} • {item.location}
                         </Text>
+                        {item.date && (
+                          <Text type="secondary" style={{ fontSize: 12 }}>
+                            <CalendarOutlined /> {dayjs(item.date).format('MMM D, YYYY h:mm A')}
+                          </Text>
+                        )}
                       </Space>
                     }
                   />

@@ -12,7 +12,10 @@ import {
   Skeleton,
   Grid,
   ConfigProvider,
-  Card
+  Card,
+  Modal,
+  Form,
+  message
 } from 'antd';
 import { Link } from 'react-router-dom';
 import {
@@ -24,13 +27,15 @@ import {
   ClockCircleOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
-  MoreOutlined
+  MoreOutlined,
+  UserAddOutlined
 } from '@ant-design/icons';
 import supabase from '../services/supabaseClient';
 import { AuthContext } from '../context/AuthContext';
 
 const { Title, Text } = Typography;
 const { useBreakpoint } = Grid;
+
 const themeConfig = {
   token: {
     colorPrimary: '#ffb300',
@@ -97,129 +102,133 @@ const statusConfig = {
   }
 };
 
-const MyLoanRequest = () => {
+const MyEventRequest = () => {
   const { user } = useContext(AuthContext);
-  const [loans, setLoans] = useState([]);
-  const [filteredLoans, setFilteredLoans] = useState([]);
+  const [events, setEvents] = useState([]);
+  const [filteredEvents, setFilteredEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isAddUserModalVisible, setIsAddUserModalVisible] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [form] = Form.useForm();
   const screens = useBreakpoint();
 
-  const fetchLoans = useCallback(async () => {
+  const fetchEvents = useCallback(async () => {
     if (!user?.id) return;
     setLoading(true);
     try {
       const { data, error } = await supabase
-        .from('loan-form-request')
+        .from('event-form-request')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
-      setLoans(data || []);
-      setFilteredLoans(data || []);
+      setEvents(data || []);
+      setFilteredEvents(data || []);
     } catch (error) {
-      console.error('Error fetching loans:', error);
+      console.error('Error fetching events:', error);
     } finally {
       setLoading(false);
     }
   }, [user?.id]);
 
   useEffect(() => {
-    fetchLoans();
-  }, [fetchLoans]);
+    fetchEvents();
+  }, [fetchEvents]);
 
   useEffect(() => {
     const term = searchTerm.trim().toLowerCase();
     if (!term) {
-      setFilteredLoans(loans);
+      setFilteredEvents(events);
       return;
     }
-    const filtered = loans.filter((loan) => {
+    const filtered = events.filter((event) => {
       return (
-        loan.loan_amount?.toString().includes(term) ||
-        loan.status?.toLowerCase().includes(term) ||
-        loan.loan_purpose?.toLowerCase().includes(term) ||
-        loan.id?.toString().includes(term)
+        event.title?.toLowerCase().includes(term) ||
+        event.status?.toLowerCase().includes(term) ||
+        event.category?.toLowerCase().includes(term) ||
+        event.id?.toString().includes(term)
       );
     });
-    setFilteredLoans(filtered);
-  }, [searchTerm, loans]);
+    setFilteredEvents(filtered);
+  }, [searchTerm, events]);
 
   const handleRefresh = () => {
-    fetchLoans();
+    fetchEvents();
   };
 
-  const getActionMenu = (record) => (
-    <Menu
-      items={[
-        {
-          key: 'view',
-          icon: <FileTextOutlined />,
-          label: <Link to={`/loan-detail/${record.id}`}>View Details</Link>,
-        },
-        {
-          key: 'refresh',
-          icon: <ReloadOutlined />,
-          label: 'Refresh Status',
-          onClick: handleRefresh,
-        },
-      ]}
-    />
-  );
+  const showAddUserModal = (event) => {
+    setSelectedEvent(event);
+    setIsAddUserModalVisible(true);
+  };
+
+  const handleAddUser = async () => {
+    try {
+      const values = await form.validateFields();
+    
+      const { error } = await supabase
+        .from('event_participants')
+        .insert([{
+          event_id: selectedEvent.id,
+          full_name: values.fullName,
+          email: values.email,
+          phone: values.phone,
+          invited_by: user.id
+        }]);
+
+      if (error) throw error;
+
+      message.success('User added to event successfully!');
+      setIsAddUserModalVisible(false);
+      form.resetFields();
+    } catch (error) {
+      console.error('Error adding user:', error);
+      message.error('Failed to add user to event');
+    }
+  };
 
   const columns = [
     {
-      title: 'LOAN ID',
+      title: 'EVENT ID',
       dataIndex: 'id',
       key: 'id',
       render: (id) => <Text strong>#{id}</Text>,
       responsive: ['md'],
     },
     {
-      title: 'AMOUNT',
-      dataIndex: 'loan_amount',
-      key: 'amount',
-      sorter: (a, b) => (a.loan_amount || 0) - (b.loan_amount || 0),
-      render: (amount) => (
+      title: 'TITLE',
+      dataIndex: 'title',
+      key: 'title',
+      render: (title) => (
         <Text strong style={{ color: '#1a1a1a' }}>
-          {amount ? `PKR ${amount.toLocaleString()}` : '-'}
+          {title || '-'}
         </Text>
       ),
     },
     {
-      title: 'PURPOSE',
-      dataIndex: 'loan_purpose',
-      key: 'purpose',
-      render: (purpose) => (
-        <Tooltip title={purpose}>
-          <Text ellipsis style={{ maxWidth: '150px' }}>
-            {purpose || '-'}
-          </Text>
-        </Tooltip>
+      title: 'CATEGORY',
+      dataIndex: 'category',
+      key: 'category',
+      render: (category) => (
+        <Tag color="blue" style={{ textTransform: 'capitalize' }}>
+          {category || '-'}
+        </Tag>
       ),
     },
     {
-      title: 'DURATION',
-      dataIndex: 'repayment_period',
-      key: 'duration',
-      sorter: (a, b) => (a.repayment_period || 0) - (b.repayment_period || 0),
-      render: (duration) => `${duration ? `${duration} months` : '-'}`,
-      responsive: ['lg'],
-    },
-    {
-      title: 'APPLIED ON',
-      dataIndex: 'created_at',
-      key: 'created_at',
-      sorter: (a, b) => new Date(a.created_at) - new Date(b.created_at),
+      title: 'DATE & TIME',
+      dataIndex: 'date_time',
+      key: 'date_time',
       render: (date) => (
         <Text>
-          {date ? new Date(date).toLocaleDateString('en-US', {
+          {date ? new Date(date).toLocaleString('en-US', {
             year: 'numeric',
             month: 'short',
             day: 'numeric',
-            ...(screens.md ? { hour: '2-digit', minute: '2-digit' } : {})
+            hour: '2-digit',
+            minute: '2-digit'
           }) : '-'}
         </Text>
       ),
@@ -258,25 +267,40 @@ const MyLoanRequest = () => {
       },
     },
     {
-      title: '',
+      title: 'ACTIONS',
       key: 'action',
-      width: 60,
       render: (_, record) => (
-        <Dropdown
-          overlay={getActionMenu(record)}
-          placement="bottomRight"
-          trigger={['click']}
-          arrow={{ pointAtCenter: true }}
-        >
+        <Space>
           <Button
-            shape="circle"
-            size="small"
-            icon={<MoreOutlined style={{ fontSize: '16px' }} />}
-            type="text"
-            style={{ color: '#595959' }}
-            onClick={e => e.preventDefault()}
-          />
-        </Dropdown>
+            type="primary"
+            icon={<UserAddOutlined />}
+            onClick={() => showAddUserModal(record)}
+            disabled={record.status !== 'approved'}
+            style={{
+              backgroundColor: record.status === 'approved' ? '#1a1a1a' : '#f5f5f5',
+              color: record.status === 'approved' ? '#ffb300' : '#d9d9d9',
+              borderColor: record.status === 'approved' ? '#1a1a1a' : '#d9d9d9'
+            }}
+          >
+            Add User
+          </Button>
+          <Dropdown
+            overlay={
+              <Menu>
+                <Menu.Item key="view" icon={<FileTextOutlined />}>
+                  <Link to={`/event-detail/${record.id}`}>View Details</Link>
+                </Menu.Item>
+                <Menu.Item key="refresh" icon={<ReloadOutlined />} onClick={handleRefresh}>
+                  Refresh Status
+                </Menu.Item>
+              </Menu>
+            }
+            placement="bottomRight"
+            trigger={['click']}
+          >
+            <Button shape="circle" icon={<MoreOutlined />} />
+          </Dropdown>
+        </Space>
       ),
     },
   ];
@@ -297,10 +321,10 @@ const MyLoanRequest = () => {
           marginBottom: '24px',
         }}>
           <Title level={3} style={{ fontWeight: 600, backgroundColor: 'black', color: '#ffb300', padding: '8px', borderRadius: '8px', display: 'inline-block' }}>
-            My Event Request</Title>
+            My Event Requests</Title>
 
           <Space wrap style={{ width: screens.xs ? '100%' : 'auto' }}>
-            <Link to="/new-loan" style={{ width: screens.xs ? '100%' : 'auto' }}>
+            <Link to="/new-event" style={{ width: screens.xs ? '100%' : 'auto' }}>
               <Button
                 type="primary"
                 icon={<PlusCircleOutlined />}
@@ -315,7 +339,7 @@ const MyLoanRequest = () => {
                   border: '1px solid #333333'
                 }}
               >
-                New Application
+                Create New Event
               </Button>
             </Link>
             <Button
@@ -332,7 +356,7 @@ const MyLoanRequest = () => {
         </div>
 
         <Input
-          placeholder="Search by ID, amount, purpose or status..."
+          placeholder="Search by ID, title, category or status..."
           prefix={<SearchOutlined style={{ color: '#bfbfbf' }} />}
           suffix={
             searchTerm && (
@@ -371,12 +395,12 @@ const MyLoanRequest = () => {
           ) : (
             <Table
               columns={columns}
-              dataSource={filteredLoans}
+              dataSource={filteredEvents}
               rowKey="id"
               pagination={{
                 pageSize: 10,
                 showSizeChanger: true,
-                showTotal: (total) => `Total ${total} applications`,
+                showTotal: (total) => `Total ${total} events`,
                 pageSizeOptions: ['10', '25', '50'],
                 size: 'small'
               }}
@@ -397,13 +421,13 @@ const MyLoanRequest = () => {
                     }} />
                     <div style={{ marginBottom: '16px' }}>
                       <Text strong style={{ display: 'block', marginBottom: '4px' }}>
-                        No loan applications found
+                        No events found
                       </Text>
                       <Text type="secondary" style={{ fontSize: '13px' }}>
-                        You haven't applied for any loans yet
+                        You haven't created any events yet
                       </Text>
                     </div>
-                    <Link to="/new-loan">
+                    <Link to="/new-event">
                       <Button
                         type="primary"
                         icon={<PlusOutlined />}
@@ -414,7 +438,7 @@ const MyLoanRequest = () => {
                           border: '1px solid #333333'
                         }}
                       >
-                        Apply for a loan
+                        Create New Event
                       </Button>
                     </Link>
                   </div>
@@ -423,9 +447,49 @@ const MyLoanRequest = () => {
             />
           )}
         </Card>
+
+        {/* Add User Modal */}
+        <Modal
+          title={`Add User to ${selectedEvent?.title}`}
+          visible={isAddUserModalVisible}
+          onOk={handleAddUser}
+          onCancel={() => {
+            setIsAddUserModalVisible(false);
+            form.resetFields();
+          }}
+          okText="Add User"
+          cancelText="Cancel"
+        >
+          <Form form={form} layout="vertical">
+            <Form.Item
+              name="fullName"
+              label="Full Name"
+              rules={[{ required: true, message: 'Please enter full name' }]}
+            >
+              <Input placeholder="Enter user's full name" />
+            </Form.Item>
+            <Form.Item
+              name="email"
+              label="Email"
+              rules={[
+                { required: true, message: 'Please enter email' },
+                { type: 'email', message: 'Please enter a valid email' }
+              ]}
+            >
+              <Input placeholder="Enter user's email" />
+            </Form.Item>
+            <Form.Item
+              name="phone"
+              label="Phone Number"
+              rules={[{ required: true, message: 'Please enter phone number' }]}
+            >
+              <Input placeholder="Enter user's phone number" />
+            </Form.Item>
+          </Form>
+        </Modal>
       </div>
     </ConfigProvider>
   );
 };
 
-export default MyLoanRequest;
+export default MyEventRequest;

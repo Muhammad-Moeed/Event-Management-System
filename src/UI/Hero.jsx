@@ -76,17 +76,16 @@ export default function Hero() {
           >
             All&nbsp;
             <Typography
-  component="span"
-  variant="h1"
-  sx={{
-    fontSize: 'inherit',
-    color: '#f3aa02',
-  }}
->
-  Events
-</Typography>
-
-            &nbsp;Se Knowledge Brhao
+              component="span"
+              variant="h1"
+              sx={{
+                fontSize: 'inherit',
+                color: '#f3aa02',
+              }}
+            >
+              Events
+            </Typography>
+            &nbsp;In One Place
           </Typography>
 
           <Typography
@@ -96,8 +95,8 @@ export default function Hero() {
               width: { sm: '100%', md: '80%' },
             }}
           >
-            Bina mushkilat ke hasil karein faiz-free qarza chand asaan steps mein.
-            Aapka bharosa, hamari zimmedari. Sirf CNIC number se shuruat karein.
+            Create, manage, and track all your events effortlessly. From small meetups to large conferences,
+            our platform helps you organize everything seamlessly.
           </Typography>
 
           <Stack
@@ -106,42 +105,33 @@ export default function Hero() {
             useFlexGap
             sx={{ pt: 2, width: { xs: '100%', sm: '400px' } }}
           >
-            <InputLabel htmlFor="cnic-hero" sx={visuallyHidden}>
-              CNIC Number
+            <InputLabel htmlFor="email-hero" sx={visuallyHidden}>
+              Email Address
             </InputLabel>
             <TextField
-              id="cnic-hero"
+              id="email-hero"
               hiddenLabel
               size="small"
               variant="outlined"
-              aria-label="Enter your CNIC number"
-              placeholder="Apna CNIC Number daalein"
+              aria-label="Enter your email address"
+              placeholder="Your email address"
               fullWidth
-              slotProps={{
-                htmlInput: {
-                  autoComplete: 'off',
-                  inputMode: 'numeric',
-                  pattern: '[0-9]*',
-                  'aria-label': 'Enter your CNIC number',
-                },
-              }}
             />
             <Button
-  variant="contained"
-  size="small"
-  sx={{
-    minWidth: 'fit-content',
-    whiteSpace: 'nowrap',
-    backgroundColor: 'black',
-    color: '#e09c00',
-    '&:hover': {
-      backgroundColor: 'black',
-    },
-  }}
->
-  Event Start
-</Button>
-
+              variant="contained"
+              size="small"
+              sx={{
+                minWidth: 'fit-content',
+                whiteSpace: 'nowrap',
+                backgroundColor: 'black',
+                color: '#e09c00',
+                '&:hover': {
+                  backgroundColor: 'black',
+                },
+              }}
+            >
+              Get Started
+            </Button>
           </Stack>
 
           <Typography
@@ -149,11 +139,10 @@ export default function Hero() {
             color="text.secondary"
             sx={{ textAlign: 'center' }}
           >
-            Qarza shuru karne par aap hamari&nbsp;
+            By signing up, you agree to our&nbsp;
             <Link href="#" color="primary">
-              Shara'it o Zawabit
+              Terms of Service
             </Link>
-            &nbsp;se ittifaq karte hain.
           </Typography>
 
           <Typography
@@ -161,7 +150,7 @@ export default function Hero() {
             color="success.main"
             sx={{ textAlign: 'center', fontWeight: 500 }}
           >
-            100% Shariah Compliant | Approved by Muhammad Moeed
+            Trusted by thousands of event organizers worldwide
           </Typography>
         </Stack>
 

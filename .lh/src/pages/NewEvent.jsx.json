@@ -1,0 +1,42 @@
+{
+    "sourceFile": "src/pages/NewEvent.jsx",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 6,
+            "patches": [
+                {
+                    "date": 1748255495225,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1748255501356,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,6 +1,6 @@\n import React from 'react'\r\n-import LoanForm from '../components/LoanForm'\r\n+import EventForm from '../components/LoanForm'\r\n import { Typography } from 'antd'\r\n \r\n const { Title } = Typography;\r\n \r\n"
+                },
+                {
+                    "date": 1748255507480,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,6 +1,6 @@\n import React from 'react'\r\n-import EventForm from '../components/LoanForm'\r\n+import EventForm from '../components/EventForm'\r\n import { Typography } from 'antd'\r\n \r\n const { Title } = Typography;\r\n \r\n"
+                },
+                {
+                    "date": 1748255517555,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -7,9 +7,9 @@\n const MyLoan = () => {\r\n   return (\r\n     <div style={{ paddingLeft: 20, }}>\r\n       <Title level={3} style={{ fontWeight: 600, backgroundColor:'black', color : '#ffb300', padding: '8px', borderRadius: '8px', display : 'inline-block' }}>\r\n-       New Loan Application</Title>\r\n+       New Event Application</Title>\r\n       <LoanForm />\r\n     </div>\r\n   )\r\n }\r\n"
+                },
+                {
+                    "date": 1748255524559,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -13,5 +13,5 @@\n     </div>\r\n   )\r\n }\r\n \r\n-export default MyLoan\n\\ No newline at end of file\n+export default MyEvent\n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1748255541416,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -8,9 +8,9 @@\n   return (\r\n     <div style={{ paddingLeft: 20, }}>\r\n       <Title level={3} style={{ fontWeight: 600, backgroundColor:'black', color : '#ffb300', padding: '8px', borderRadius: '8px', display : 'inline-block' }}>\r\n        New Event Application</Title>\r\n-      <LoanForm />\r\n+      <EventForm />\r\n     </div>\r\n   )\r\n }\r\n \r\n"
+                },
+                {
+                    "date": 1748255547437,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -3,9 +3,9 @@\n import { Typography } from 'antd'\r\n \r\n const { Title } = Typography;\r\n \r\n-const MyLoan = () => {\r\n+const MyEvent = () => {\r\n   return (\r\n     <div style={{ paddingLeft: 20, }}>\r\n       <Title level={3} style={{ fontWeight: 600, backgroundColor:'black', color : '#ffb300', padding: '8px', borderRadius: '8px', display : 'inline-block' }}>\r\n        New Event Application</Title>\r\n"
+                }
+            ],
+            "date": 1748255495225,
+            "name": "Commit-0",
+            "content": "import React from 'react'\r\nimport LoanForm from '../components/LoanForm'\r\nimport { Typography } from 'antd'\r\n\r\nconst { Title } = Typography;\r\n\r\nconst MyLoan = () => {\r\n  return (\r\n    <div style={{ paddingLeft: 20, }}>\r\n      <Title level={3} style={{ fontWeight: 600, backgroundColor:'black', color : '#ffb300', padding: '8px', borderRadius: '8px', display : 'inline-block' }}>\r\n       New Loan Application</Title>\r\n      <LoanForm />\r\n    </div>\r\n  )\r\n}\r\n\r\nexport default MyLoan"
+        }
+    ]
+}

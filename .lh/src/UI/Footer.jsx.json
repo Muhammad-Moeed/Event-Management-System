@@ -1,0 +1,22 @@
+{
+    "sourceFile": "src/UI/Footer.jsx",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 1,
+            "patches": [
+                {
+                    "date": 1748256549439,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1748256555448,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -11,9 +11,9 @@\n       borderTop: '1px solid #ddd' \r\n     }}>\r\n       <img src={logo} alt=\"Logo\" style={{ height: 40, marginRight: 15 }} />\r\n       <p style={{ margin: 0, color: '#555', fontSize: 14 }}>\r\n-        © 2025 . All rights reserved.\r\n+        © 2025 Event Managemnt. All rights reserved.\r\n       </p>\r\n     </footer>\r\n   );\r\n }\r\n"
+                }
+            ],
+            "date": 1748256549439,
+            "name": "Commit-0",
+            "content": "import React from 'react';\r\nimport logo from '../assets/logo.png';\r\n\r\nexport default function Footer() {\r\n  return (\r\n    <footer style={{ \r\n      display: 'flex', \r\n      alignItems: 'center', \r\n      padding: '10px 20px', \r\n      backgroundColor: '#f5f5f5',\r\n      borderTop: '1px solid #ddd' \r\n    }}>\r\n      <img src={logo} alt=\"Logo\" style={{ height: 40, marginRight: 15 }} />\r\n      <p style={{ margin: 0, color: '#555', fontSize: 14 }}>\r\n        © 2025 . All rights reserved.\r\n      </p>\r\n    </footer>\r\n  );\r\n}\r\n"
+        }
+    ]
+}
